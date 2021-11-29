@@ -1,12 +1,42 @@
 const fetch = require('node-fetch');
+const STATUS_CODES = require('../constants/statusCodes');
+
 async function getTickets(ticketUrl, options){
-	// we'll be using pagination APIs then we'll ask whether they would like to view the next 25 or previous 25 and show the tickets accordingly
-	let response = await fetch(ticketUrl, options);
-	return response;
+    let response;
+    try{
+        response = await fetch(ticketUrl, options);
+        if (response.status == STATUS_CODES.STATUS_CODES.OK){
+	        return response;
+        }else{
+            throw new Error(response.status);
+        }
+    }catch(error){
+        return response.status;
+    }
+	
+};
+
+async function getATicket(ticketUrl, options){
+    let response;
+    try{
+        response = await fetch(ticketUrl, options);
+        if (response.status == STATUS_CODES.STATUS_CODES.OK){
+	        return response;
+        }else{
+            throw new Error(response.status);
+        }
+    }catch(error){
+        return response.status;
+    }
+	
 };
 
 
 
 
 
-module.exports.getTickets = getTickets;
+module.exports  = {
+    getTickets: getTickets,
+    getATicket: getATicket
+
+}

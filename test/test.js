@@ -45,6 +45,43 @@ let fetchAllAccountTickets = {
     }
 };
 
+let fetchAllAccountTicketsWrongUrl = {
+    url: baseURL + '/tickeets',
+    options: {
+        method: 'GET',
+        headers: {
+			"Content-Type": "application/json" ,
+			'Authorization': 'Basic ' + base64encode(username + ":" + password)
+        }
+    }
+};
+
+let fetchATicket = {
+    url: baseURL + "/api/v2/tickets/1.json",
+    options: {
+        method: 'GET',
+        headers: {
+			"Content-Type": "application/json" ,
+			'Authorization': 'Basic ' + base64encode(username + ":" + password)
+        }
+    }
+
+};
+
+let fetchInvalidTicket = {
+    url: baseURL + "/api/v2/tickets/109.json",
+    options: {
+        method: 'GET',
+        headers: {
+			"Content-Type": "application/json" ,
+			'Authorization': 'Basic ' + base64encode(username + ":" + password)
+        }
+    }
+
+};
+
+
+
 
 describe('Connect to Zendesk API', function(){
     it('Error authenticating the agent/admin', async function(){
@@ -63,7 +100,31 @@ describe('Connect to Zendesk API', function(){
             assert.equal(STATUS_CODES.STATUS_CODES.OK, responsegetTickets.status);
         })
 
+        it('Failed fetching the tickets from the invalid Zendesk Ticket API', async function(){
+            let responsegetTickets =  await getTickets.getTickets(fetchAllAccountTicketsWrongUrl.url, fetchAllAccountTicketsWrongUrl.options);
+            
+            assert.equal(STATUS_CODES.STATUS_CODES.NOT_FOUND, responsegetTickets);
+        })
+        
+
     })
+
+    describe('Fetch a specific ticket from the Zendesk account after being authenticated', function(){
+
+
+        it('Successfully fetched the ticket from to the Zendesk Ticket API', async function(){
+            let responsegetTicket =  await getTickets.getATicket(fetchATicket.url, fetchATicket.options);
+            assert.equal(STATUS_CODES.STATUS_CODES.OK, responsegetTicket.status);
+        })
+
+        it('Failed fetching the invalid ticket from the Zendesk Ticket API', async function(){
+            let responsegetTicket =  await getTickets.getATicket(fetchInvalidTicket.url, fetchInvalidTicket.options);
+            assert.equal(STATUS_CODES.STATUS_CODES.NOT_FOUND, responsegetTicket);
+        })
+
+    })
+
+
 
 
 })

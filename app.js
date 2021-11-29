@@ -70,7 +70,7 @@ async function callgetTickets(ticketUrl){
 
 async function getATicket(ticketUrl, options){
 	try{
-		let getTicketResponse = await getTickets.getTickets(ticketUrl, options);
+		let getTicketResponse = await getTickets.getATicket(ticketUrl, options);
 		// console.log(getTicketResponse);
 		if (getTicketResponse.status == STATUS_CODES.STATUS_CODES.OK) {
 			let ticketObj = await getTicketResponse.json();
