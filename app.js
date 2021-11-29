@@ -1,7 +1,6 @@
 
 const readline = require('readline');
 const { base64encode, base64decode } = require('nodejs-base64');
-const fetch = require('node-fetch');
 const credentials = require('dotenv').config();
 const URLS = require('./constants/urls');
 const STATUS_CODES = require('./constants/statusCodes');
@@ -58,7 +57,7 @@ async function callgetTickets(ticketUrl){
 		}
 		else {
 
-			throw new Error(`Problem fetching the tickets: ${getTicketsResponse.statusText} `);
+			throw new Error(`Problem fetching the tickets: ${getTicketsResponse} `);
 
 		}
 	}catch(error){
@@ -78,7 +77,7 @@ async function getATicket(ticketUrl, options){
 			recursiveShowMenu();
 		}
 		else{
-			throw new Error(`Problem fetching the ticket: ${getTicketResponse.statusText}. Please enter a valid ticket number`);
+			throw new Error(`Problem fetching the ticket: ${getTicketResponse}. Please enter a valid ticket number`);
 		}
 	}catch(err){
 		console.error(err);
