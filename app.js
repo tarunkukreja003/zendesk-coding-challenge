@@ -1,16 +1,11 @@
-// import the readline module for work with stdin, or stdout.
+
 const readline = require('readline');
 const { base64encode, base64decode } = require('nodejs-base64');
 const fetch = require('node-fetch');
 const credentials = require('dotenv').config();
 const URLS = require('./constants/urls');
 const STATUS_CODES = require('./constants/statusCodes');
-
-// create a readline object to work with the stream.
-// pass the stdin, or stdout in the current process.
-
-// put urls in some const files
-// clean the code
+let getTickets = require('./utils/getTickets');
 
 let baseURL = URLS.URLS.BASE_URL;
 let username = credentials.parsed.USERNAME;
@@ -37,17 +32,11 @@ let myTickets = {
 };
 
 
-async function getTickets(ticketUrl, options){
-	// we'll be using pagination APIs then we'll ask whether they would like to view the next 25 or previous 25 and show the tickets accordingly
-	let response = await fetch(ticketUrl, options);
-	return response;
-	// let fetchedTicketsArr = tickets.tickets ;
-	// return fetchedTicketsArr
-};
+
 
 async function callgetTickets(ticketUrl){
 
-	let getTicketsResponse = await getTickets(ticketUrl, myTickets.options);
+	let getTicketsResponse = await getTickets.getTickets(ticketUrl, myTickets.options);
 	if (getTicketsResponse.status == STATUS_CODES.STATUS_CODES.OK){
 		let ticketsObj = await getTicketsResponse.json();
 		// call the function here which will display the specific information of tickets
@@ -152,10 +141,6 @@ function ticketDetails(ticket){
 
 
 
-
-
-// recursive function will break after it will reach its maximum recursion depth
-
 const prompts = readline.createInterface(process.stdin, process.stdout);
 
 
@@ -170,8 +155,6 @@ function recursiveQuestion(){
 
 		// check the response.
 		if(response.toLocaleLowerCase() == 'menu') {
-
-
 			recursiveShowMenu();
 		}
 		else if(response.toLocaleLowerCase() == 'quit') {
@@ -189,10 +172,9 @@ function recursiveQuestion(){
 
 }
 
+
+
 recursiveQuestion();
-
-
-module.exports.getTickets = getTickets;
 
 
 
