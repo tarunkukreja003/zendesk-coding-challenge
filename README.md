@@ -46,6 +46,9 @@ While using pagination the limit is currently 25 tickets per page but we could c
 
 I wasn't able to find an API for verifying the Agent's credentials for creating unit test. Like, I thought of creating a test for checking whether the Agent is valid for the account or not. Maybe we can create one.
 
+Error messages from my end should have been better
+
+Currently I have added only the next links in pagination, but previous links can also be added
 
 
 
