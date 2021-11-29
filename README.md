@@ -6,6 +6,10 @@
 
 1. Clone the repository in your system
 2. Open command line and Navigate to the directory in which you cloned the repository
+3. Do 
+```
+cd zendesk-coding-challenge/
+```
 3. Type the following
 ``` 
 npm install
