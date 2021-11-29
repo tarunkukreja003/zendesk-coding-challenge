@@ -3,12 +3,16 @@ const readline = require('readline');
 const { base64encode, base64decode } = require('nodejs-base64');
 const fetch = require('node-fetch');
 const credentials = require('dotenv').config();
-
+const URLS = require('./constants/urls');
+const STATUS_CODES = require('./constants/statusCodes');
 
 // create a readline object to work with the stream.
 // pass the stdin, or stdout in the current process.
 
-let baseURL = "https://zccstudentstarun003.zendesk.com/";
+// put urls in some const files
+// clean the code
+
+let baseURL = URLS.URLS.BASE_URL;
 let username = credentials.parsed.USERNAME;
 let password = credentials.parsed.PASSWORD;
 
@@ -33,17 +37,120 @@ let myTickets = {
 };
 
 
-// let url = baseURL + "/api/v2/tickets/" + ticketNumberStr +".json"
-// getTicket = {
-// 	url: url,
-// 	options: {
-// 		method: "GET",
-// 		headers: { 
-// 			"Content-Type": "application/json" ,
-// 			'Authorization': 'Basic ' + base64encode(username + ":" + password)
-// 		}
-// 	}
-// };
+async function getTickets(ticketUrl, options){
+	// we'll be using pagination APIs then we'll ask whether they would like to view the next 25 or previous 25 and show the tickets accordingly
+	let response = await fetch(ticketUrl, options);
+	return response;
+	// let fetchedTicketsArr = tickets.tickets ;
+	// return fetchedTicketsArr
+};
+
+async function callgetTickets(ticketUrl){
+
+	let getTicketsResponse = await getTickets(ticketUrl, myTickets.options);
+	if (getTicketsResponse.status == STATUS_CODES.STATUS_CODES.OK){
+		let ticketsObj = await getTicketsResponse.json();
+		// call the function here which will display the specific information of tickets
+
+		for(let i=0; i<ticketsObj.tickets.length; i++){
+			console.log(ticketDetails(ticketsObj.tickets[i]));
+		}
+		if (ticketsObj.meta.has_more){
+			recursiveViewTickets(ticketsObj.links.next);
+		}
+		else {
+			console.log('You have seen all the tickets, following is the menu \n');
+			recursiveShowMenu();
+		}
+	}
+	else {
+
+		console.log('Hello');
+
+	}
+
+
+}
+
+
+
+function recursiveViewTickets(currentTicketsUrl) {
+
+	// Do for before link as well
+	prompts.question('Would you like to view more tickets? (Yes/No) ', async function(responseYesOrNo) {
+		if (responseYesOrNo.toLocaleLowerCase() == 'yes') {
+			console.log('Following are the next tickets');
+			callgetTickets(currentTicketsUrl)
+			}
+		else if (responseYesOrNo.toLocaleLowerCase() == 'no'){
+			recursiveShowMenu();
+		}
+		else {
+			console.log("Please enter either Yes or No");
+			recursiveViewTickets(currentTicketsUrl);
+		}
+		});
+	}
+
+function recursiveShowMenu(){
+			
+		
+	prompts.question('Menu options: \n * Press 1 to view all tickets \n * Press 2 to view a ticket \n * Press 3 to quit \n', async function(responseNested) {
+		if (responseNested == '1') {
+			// hit the API to view all the tickets
+			callgetTickets(myTickets.url);
+			
+		
+		}
+		else if (responseNested == '2') {
+			// first request the ticket number and check whether that ticket exists
+			prompts.question("Please enter the ticket number to view: ", (ticketNumberResponse) => {
+				// getTicketUrl(ticketNumberResponse);
+
+				fetch(baseURL + "/api/v2/tickets/" + ticketNumberResponse +".json", myTickets.options)
+				.then((res) => {
+					if (res.status >= 200 && res.status <= 299) {
+						return res.json();
+					} else {
+						throw Error(res.statusText);
+					}
+				})
+				.then((ticket) => {
+					 console.log(ticketDetails(ticket.ticket))
+					 recursiveShowMenu();
+				})
+				.catch((err) => {
+					let errorMessage = "Ticket: " + err + ". Please enter another number";
+					console.log(errorMessage);
+				});
+			})
+		}
+
+		else if (responseNested == '3') {
+			process.exit();
+		}
+		else {
+			console.log("Sorry, this menu option doesn't exist, following is the menu \n");
+			recursiveShowMenu();
+		}
+	});
+
+}
+
+function ticketDetails(ticket){
+	let ticketId = ticket.id;
+	let ticketStatus = ticket.status;
+	let requesterId = ticket.requester_id;
+	let assigneeId = ticket.assignee_id;
+
+	let message = `Ticket number ${ticketId} is ${ticketStatus}. It is requested by ${requesterId} and assigned to ${assigneeId} `;
+
+	return message;
+
+}
+
+
+
 
 
 
@@ -64,99 +171,7 @@ function recursiveQuestion(){
 		// check the response.
 		if(response.toLocaleLowerCase() == 'menu') {
 
-			function recursiveShowMenu(){
-				
-			
-				prompts.question('Menu options: \n * Press 1 to view all tickets \n * Press 2 to view a ticket \n * Press 3 to quit \n', function(responseNested) {
-					if (responseNested == '1') {
-						// hit the API to view all the tickets
-						async function getTickets(){
-							// we'll be using pagination APIs then we'll ask whether they would like to view the next 25 or previous 25 and show the tickets accordingly
-							let ticketsData = await fetch(myTickets.url, myTickets.options);
-							let tickets = await ticketsData.json();
-							let fetchedTicketsArr = tickets.tickets ;
-							console.log(fetchedTicketsArr[0]);
 
-							function recursiveViewTickets(currentTicketsUrl) {
-
-								prompts.question('Would you like to view more tickets? (Yes/No) ', (responseYesOrNo) => {
-									if (responseYesOrNo.toLocaleLowerCase() == 'yes') {
-										console.log('Following are the next tickets');
-
-										fetch(currentTicketsUrl, myTickets.options)
-										.then((ticketsData) => ticketsData.json())
-										.then((ticketObj)=>{
-											console.log(ticketObj.tickets[0])
-											if (ticketObj.meta.has_more){
-												recursiveViewTickets(ticketObj.links.next);
-											}
-											else{
-												console.log('You have seen all the tickets, following is the menu \n');
-												recursiveShowMenu();
-											}
-										})
-										.catch((err)=>console.log(err));
-										}
-									else if (responseYesOrNo.toLocaleLowerCase() == 'no'){
-										recursiveShowMenu();
-									}
-									});
-								}	
-								
-							if (tickets.meta.has_more){
-								recursiveViewTickets(tickets.links.next);
-							}
-							else {
-								console.log('You have seen all the tickets, following is the menu \n');
-								recursiveShowMenu();
-							}
-						
-						}	
-
-							
-							
-							
-						
-
-						getTickets();
-						// .then(() => process.exit())
-						// .catch((err)=> console.log(err));
-						
-						// at one time only 25 tickets can be shown, press enter then the next 25 tickets
-						
-					}
-					else if (responseNested == '2') {
-						// first request the ticket number and check whether that ticket exists
-						prompts.question("Please enter the ticket number to view: ", (ticketNumberResponse) => {
-							// getTicketUrl(ticketNumberResponse);
-
-							fetch(baseURL + "/api/v2/tickets/" + ticketNumberResponse +".json", getTicket.options)
-							.then((res) => {
-								if (res.status >= 200 && res.status <= 299) {
-									return res.json();
-								} else {
-									throw Error(res.statusText);
-								}
-							})
-							.then((ticket) => console.log(ticket))
-							.catch((err) => {
-								let errorMessage = "Ticket: " + err + ". Please enter another number";
-								console.log(errorMessage);
-							});
-						})
-						// hit the API to view the details of the ticket 
-					}
-
-					else if (responseNested == '3') {
-						process.exit();
-					}
-					else {
-						console.log("Sorry, this menu option doesn't exist, following is the menu \n");
-						recursiveShowMenu();
-					}
-				});
-
-			}
 			recursiveShowMenu();
 		}
 		else if(response.toLocaleLowerCase() == 'quit') {
@@ -176,6 +191,8 @@ function recursiveQuestion(){
 
 recursiveQuestion();
 
+
+module.exports.getTickets = getTickets;
 
 
 
