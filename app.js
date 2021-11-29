@@ -13,7 +13,6 @@ let password = credentials.parsed.PASSWORD;
 
 
 
-// the limit is currently 25 tickets per page but an extension would be to customise this by asking the user of how many tickets do they want to view or we can ask the user for the range of ticket numbers they would like to view
 
 let urlGetTickets = new URL(baseURL + "api/v2/tickets.json"),params = {"page[size]":25}
 
@@ -42,7 +41,6 @@ async function callgetTickets(ticketUrl){
 		let getTicketsResponse = await getTickets.getTickets(ticketUrl, myTickets.options);
 		if (getTicketsResponse.status == STATUS_CODES.STATUS_CODES.OK){
 			let ticketsObj = await getTicketsResponse.json();
-			// call the function here which will display the specific information of tickets
 
 			for(let i=0; i<ticketsObj.tickets.length; i++){
 				console.log(ticketDetails(ticketsObj.tickets[i]));
@@ -70,7 +68,6 @@ async function callgetTickets(ticketUrl){
 async function getATicket(ticketUrl, options){
 	try{
 		let getTicketResponse = await getTickets.getATicket(ticketUrl, options);
-		// console.log(getTicketResponse);
 		if (getTicketResponse.status == STATUS_CODES.STATUS_CODES.OK) {
 			let ticketObj = await getTicketResponse.json();
 			console.log(ticketDetails(ticketObj.ticket));
@@ -90,7 +87,6 @@ async function getATicket(ticketUrl, options){
 
 function recursiveViewTickets(currentTicketsUrl) {
 
-	// Do for before link as well
 	prompts.question('Would you like to view more tickets? (Yes/No) ', async function(responseYesOrNo) {
 		if (responseYesOrNo.toLocaleLowerCase() == 'yes') {
 			console.log('Following are the next tickets');
@@ -111,13 +107,11 @@ function recursiveShowMenu(){
 		
 	prompts.question('Menu options: \n * Press 1 to view all tickets \n * Press 2 to view a ticket \n * Press 3 to quit \n', async function(responseNested) {
 		if (responseNested == '1') {
-			// hit the API to view all the tickets
 			callgetTickets(myTickets.url);
 			
 		
 		}
 		else if (responseNested == '2') {
-			// first request the ticket number and check whether that ticket exists
 			prompts.question("Please enter the ticket number to view: ", (ticketNumberResponse) => {
 
 				let ticketUrl = baseURL + "/api/v2/tickets/" + ticketNumberResponse +".json";
@@ -154,9 +148,6 @@ function ticketDetails(ticket){
 const prompts = readline.createInterface(process.stdin, process.stdout);
 
 
-// create a question or there handler.
-
-// The code currently works for my account but we can get the user input for a different sub domain and the credentials for the subdomain, and authenticate the crdentials for that subdomain
 
 function recursiveQuestion(){
 
@@ -168,15 +159,12 @@ function recursiveQuestion(){
 			recursiveShowMenu();
 		}
 		else if(response.toLocaleLowerCase() == 'quit') {
-			// console.log("You are a part of the very huge learning community.");
 			process.exit();
 		}
 		else {
 			console.log("Sorry, this option doesn't exist, please type either menu or quit \n");
 			recursiveQuestion();
 		}
-
-		// after the all work is done want to terminate this process.
 
 	});
 

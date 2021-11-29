@@ -11,13 +11,7 @@ let getTickets = require('../utils/getTickets');
 
 
 
-/*
-Tests
 
-1) Check if we are successfully able to connect with the Zendesk API
-2) Check for API unavailable
-
-*/
 const baseURL = URLS.URLS.BASE_URL;
 const getTicketsOnAPageUrl = URLS.URLS.GET_TICKETS_ON_A_PAGE;
 const username = CREDENTIALS.parsed.USERNAME;
@@ -29,7 +23,8 @@ let testAuthentication = {
     options: {
         method: 'GET',
         headers: {
-			"Content-Type": "application/json"
+			"Content-Type": "application/json",
+			'Authorization': 'Basic ' + base64encode(username + ":" + password + "123")
         }
     }
 }
@@ -84,21 +79,41 @@ let fetchInvalidTicket = {
 
 
 describe('Connect to Zendesk API', function(){
+    /*
+
+    First, one should not be authorized to view any tickets with wrong credentials
+
+    */
+
     it('Error authenticating the agent/admin', async function(){
         let response = await fetch(testAuthentication.url, testAuthentication.options);
         assert.equal(STATUS_CODES.STATUS_CODES.UNAUTHORIZED, response.status);
     })
 
     
+    /*
 
+    Check if we are successfully able to connect with the Zendesk API
+
+    */
 
     describe('Fetch all the tickets from the Zendesk account after being authenticated', function(){
 
+            /*
+
+            Once authenticated check if we can get all the tickets
+
+            */
 
         it('Successfully fetched the tickets from to the Zendesk Ticket API', async function(){
             let responsegetTickets =  await getTickets.getTickets(fetchAllAccountTickets.url, fetchAllAccountTickets.options);
             assert.equal(STATUS_CODES.STATUS_CODES.OK, responsegetTickets.status);
         })
+            /*
+
+            Put an invalid URL and that should return 404
+
+            */
 
         it('Failed fetching the tickets from the invalid Zendesk Ticket API', async function(){
             let responsegetTickets =  await getTickets.getTickets(fetchAllAccountTicketsWrongUrl.url, fetchAllAccountTicketsWrongUrl.options);
@@ -110,12 +125,22 @@ describe('Connect to Zendesk API', function(){
     })
 
     describe('Fetch a specific ticket from the Zendesk account after being authenticated', function(){
+            /*
 
+            Once authenticated check if we can get a specific ticket by providing the ticket number
+
+            */
 
         it('Successfully fetched the ticket from to the Zendesk Ticket API', async function(){
             let responsegetTicket =  await getTickets.getATicket(fetchATicket.url, fetchATicket.options);
             assert.equal(STATUS_CODES.STATUS_CODES.OK, responsegetTicket.status);
         })
+
+            /*
+
+                Enter an invalid ticket number and that should return 404
+
+            */
 
         it('Failed fetching the invalid ticket from the Zendesk Ticket API', async function(){
             let responsegetTicket =  await getTickets.getATicket(fetchInvalidTicket.url, fetchInvalidTicket.options);
