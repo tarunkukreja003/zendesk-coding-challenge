@@ -36,30 +36,56 @@ let myTickets = {
 
 async function callgetTickets(ticketUrl){
 
-	let getTicketsResponse = await getTickets.getTickets(ticketUrl, myTickets.options);
-	if (getTicketsResponse.status == STATUS_CODES.STATUS_CODES.OK){
-		let ticketsObj = await getTicketsResponse.json();
-		// call the function here which will display the specific information of tickets
+	try{
 
-		for(let i=0; i<ticketsObj.tickets.length; i++){
-			console.log(ticketDetails(ticketsObj.tickets[i]));
-		}
-		if (ticketsObj.meta.has_more){
-			recursiveViewTickets(ticketsObj.links.next);
+	
+
+		let getTicketsResponse = await getTickets.getTickets(ticketUrl, myTickets.options);
+		if (getTicketsResponse.status == STATUS_CODES.STATUS_CODES.OK){
+			let ticketsObj = await getTicketsResponse.json();
+			// call the function here which will display the specific information of tickets
+
+			for(let i=0; i<ticketsObj.tickets.length; i++){
+				console.log(ticketDetails(ticketsObj.tickets[i]));
+			}
+			if (ticketsObj.meta.has_more){
+				recursiveViewTickets(ticketsObj.links.next);
+			}
+			else {
+				console.log('You have seen all the tickets, following is the menu \n');
+				recursiveShowMenu();
+			}
 		}
 		else {
-			console.log('You have seen all the tickets, following is the menu \n');
-			recursiveShowMenu();
+
+			throw new Error(`Problem fetching the tickets: ${getTicketsResponse.statusText} `);
+
 		}
-	}
-	else {
-
-		console.log('Hello');
-
+	}catch(error){
+		console.error(error);
 	}
 
 
 }
+
+async function getATicket(ticketUrl, options){
+	try{
+		let getTicketResponse = await getTickets.getTickets(ticketUrl, options);
+		// console.log(getTicketResponse);
+		if (getTicketResponse.status == STATUS_CODES.STATUS_CODES.OK) {
+			let ticketObj = await getTicketResponse.json();
+			console.log(ticketDetails(ticketObj.ticket));
+			recursiveShowMenu();
+		}
+		else{
+			throw new Error(`Problem fetching the ticket: ${getTicketResponse.statusText}. Please enter a valid ticket number`);
+		}
+	}catch(err){
+		console.error(err);
+		recursiveShowMenu();
+	}
+    
+};
 
 
 
@@ -94,24 +120,9 @@ function recursiveShowMenu(){
 		else if (responseNested == '2') {
 			// first request the ticket number and check whether that ticket exists
 			prompts.question("Please enter the ticket number to view: ", (ticketNumberResponse) => {
-				// getTicketUrl(ticketNumberResponse);
 
-				fetch(baseURL + "/api/v2/tickets/" + ticketNumberResponse +".json", myTickets.options)
-				.then((res) => {
-					if (res.status >= 200 && res.status <= 299) {
-						return res.json();
-					} else {
-						throw Error(res.statusText);
-					}
-				})
-				.then((ticket) => {
-					 console.log(ticketDetails(ticket.ticket))
-					 recursiveShowMenu();
-				})
-				.catch((err) => {
-					let errorMessage = "Ticket: " + err + ". Please enter another number";
-					console.log(errorMessage);
-				});
+				let ticketUrl = baseURL + "/api/v2/tickets/" + ticketNumberResponse +".json";
+				getATicket(ticketUrl, myTickets.options);
 			})
 		}
 
